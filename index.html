@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔥 My Epic Death Risk Page 🔥</title>
+  <style>
+    body {
+      background: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
+      color: #00FF00;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 2em;
+      background-color: black;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #FF00FF;
+      text-shadow: 2px 2px 4px #00FFFF;
+      border: 3px double #FF00FF;
+      padding: 0.5em;
+      background: linear-gradient(to bottom, #000000, #220022);
+      box-shadow: 0 0 20px #FF00FF;
+    }
+
+    .section {
+      border: 3px dashed #00FF00;
+      padding: 1em;
+      margin: 2em auto;
+      background-color: #111;
+      max-width: 700px;
+    }
+
+    .data {
+      font-size: 1.2em;
+      margin: 1em 0;
+      color: #00FFCC;
+      text-shadow: 1px 1px #000;
+    }
+
+    input, select {
+      background-color: #000;
+      color: #00FF00;
+      font-family: "Comic Sans MS", cursive;
+      padding: 5px;
+      border: 2px groove #00FF00;
+      font-size: 1em;
+      margin-top: 0.5em;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.3);
+      margin-right: 0.3em;
+    }
+  </style>
+</head>
+<body>
+  <h1>💀 DAILY DEATH RISK CALCULATOR 💀</h1>
+
+  <div class="section">
+    <div class="data">
+      🎂 Birthdate:
+      <input type="date" id="birthdate" value="1946-06-14" />
+    </div>
+
+    <div class="data">
+      🧍‍♂️ Height:
+      <select id="heightFeet">
+        <option value="4">4 ft</option>
+        <option value="5">5 ft</option>
+        <option value="6" selected>6 ft</option>
+        <option value="7">7 ft</option>
+      </select>
+      <select id="heightInches">
+        ${[...Array(12).keys()].map(i => `<option value="${i}" ${i === 3 ? 'selected' : ''}>${i} in</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="data">
+      ⚖️ Weight:
+      <input type="number" id="weight" value="250" min="1" /> lbs
+    </div>
+
+    <div class="data">
+      <label><input type="checkbox" id="isSmoker" /> Smoker</label>
+      <label><input type="checkbox" id="isBadDiet" checked /> Fast Food / Bad Diet</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="data" id="today"></div>
+    <div class="data" id="age"></div>
+    <div class="data" id="bmi"></div>
+    <div class="data" id="annual-risk"></div>
+    <div class="data" id="daily-risk"></div>
+  </div>
+
+  <script>
+    const feetEl = document.getElementById("heightFeet");
+    const inchEl = document.getElementById("heightInches");
+    const weightEl = document.getElementById("weight");
+    const birthEl = document.getElementById("birthdate");
+    const smokerEl = document.getElementById("isSmoker");
+    const dietEl = document.getElementById("isBadDiet");
+
+    const today = new Date();
+    document.getElementById("today").textContent = `📅 Today's Date: ${today.toLocaleDateString()}`;
+
+    function getAge(birth, now) {
+      let age = now.getFullYear() - birth.getFullYear();
+      const m = now.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+      return age;
+    }
+
+    function getHeightInMeters(feet, inches) {
+      const totalInches = parseInt(feet) * 12 + parseInt(inches);
+      return totalInches * 0.0254;
+    }
+
+    function calculateBMI(weightLbs, heightM) {
+      const weightKg = weightLbs * 0.453592;
+      return weightKg / (heightM * heightM);
+    }
+
+    function calculateRisk(age, bmi, isSmoker, isBadDiet) {
+      let baseRisk = 0.12;
+      let risk = baseRisk;
+
+      if (bmi >= 30 && bmi < 35) risk *= 1.10;
+      else if (bmi >= 35) risk *= 1.25;
+
+      if (isSmoker) risk *= 1.5;
+      if (isBadDiet) risk *= 1.3;
+
+      const daily = risk / 365;
+      return { annual: risk, daily };
+    }
+
+    function updateDisplay() {
+      const birthDate = new Date(birthEl.value);
+      const age = getAge(birthDate, today);
+      const heightM = getHeightInMeters(feetEl.value, inchEl.value);
+      const weight = parseFloat(weightEl.value);
+      const bmi = calculateBMI(weight, heightM);
+      const isSmoker = smokerEl.checked;
+      const isBadDiet = dietEl.checked;
+
+      const risks = calculateRisk(age, bmi, isSmoker, isBadDiet);
+
+      document.getElementById("age").textContent = `🎉 Age: ${age} years old`;
+      document.getElementById("bmi").textContent = `📏 BMI: ${bmi.toFixed(1)} (${bmi >= 30 ? "Obese" : bmi >= 25 ? "Overweight" : "Normal"})`;
+      document.getElementById("annual-risk").textContent = `📈 Estimated Annual Mortality Risk: ${(risks.annual * 100).toFixed(2)}%`;
+      document.getElementById("daily-risk").textContent = `⚠️ Daily Chance of Dying Today: ${(risks.daily * 100).toFixed(4)}% (≈ 1 in ${Math.round(1/risks.daily).toLocaleString()})`;
+    }
+
+    window.addEventListener('load', () => {
+      const storedDate = localStorage.getItem('birthdate');
+      if (storedDate) birthEl.value = storedDate;
+      updateDisplay();
+    });
+
+    [birthEl, feetEl, inchEl, weightEl, smokerEl, dietEl].forEach(el => {
+      el.addEventListener('change', () => {
+        localStorage.setItem('birthdate', birthEl.value);
+        updateDisplay();
+      });
+    });
+  </script>
+</body>
+</html>
