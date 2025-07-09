@@ -74,7 +74,18 @@
         <option value="7">7 ft</option>
       </select>
       <select id="heightInches">
-        ${[...Array(12).keys()].map(i => `<option value="${i}" ${i === 3 ? 'selected' : ''}>${i} in</option>`).join('')}
+        <option value="0">0 in</option>
+        <option value="1">1 in</option>
+        <option value="2">2 in</option>
+        <option value="3" selected>3 in</option>
+        <option value="4">4 in</option>
+        <option value="5">5 in</option>
+        <option value="6">6 in</option>
+        <option value="7">7 in</option>
+        <option value="8">8 in</option>
+        <option value="9">9 in</option>
+        <option value="10">10 in</option>
+        <option value="11">11 in</option>
       </select>
     </div>
 
@@ -151,7 +162,14 @@
       const risks = calculateRisk(age, bmi, isSmoker, isBadDiet);
 
       document.getElementById("age").textContent = `🎉 Age: ${age} years old`;
-      document.getElementById("bmi").textContent = `📏 BMI: ${bmi.toFixed(1)} (${bmi >= 30 ? "Obese" : bmi >= 25 ? "Overweight" : "Normal"})`;
+
+      if (isNaN(bmi)) {
+        document.getElementById("bmi").textContent = `📏 BMI: Invalid height or weight`;
+      } else {
+        const bmiStatus = bmi >= 30 ? "Obese" : bmi >= 25 ? "Overweight" : "Normal";
+        document.getElementById("bmi").textContent = `📏 BMI: ${bmi.toFixed(1)} (${bmiStatus})`;
+      }
+
       document.getElementById("annual-risk").textContent = `📈 Estimated Annual Mortality Risk: ${(risks.annual * 100).toFixed(2)}%`;
       document.getElementById("daily-risk").textContent = `⚠️ Daily Chance of Dying Today: ${(risks.daily * 100).toFixed(4)}% (≈ 1 in ${Math.round(1/risks.daily).toLocaleString()})`;
     }
