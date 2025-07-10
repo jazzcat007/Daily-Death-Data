@@ -97,6 +97,9 @@
     <div class="data">
       <label><input type="checkbox" id="isSmoker" /> Smoker</label>
       <label><input type="checkbox" id="isBadDiet" checked /> Fast Food / Bad Diet</label>
+      <label><input type="checkbox" id="isInactive" /> Physically Inactive</label>
+      <label><input type="checkbox" id="isHeavyDrinker" /> Heavy Alcohol Use</label>
+      <label><input type="checkbox" id="isNoHealthcare" /> Limited Access to Healthcare</label>
     </div>
   </div>
 
@@ -113,8 +116,12 @@
     const inchEl = document.getElementById("heightInches");
     const weightEl = document.getElementById("weight");
     const birthEl = document.getElementById("birthdate");
+
     const smokerEl = document.getElementById("isSmoker");
     const dietEl = document.getElementById("isBadDiet");
+    const inactiveEl = document.getElementById("isInactive");
+    const alcoholEl = document.getElementById("isHeavyDrinker");
+    const healthcareEl = document.getElementById("isNoHealthcare");
 
     const today = new Date();
     document.getElementById("today").textContent = `📅 Today's Date: ${today.toLocaleDateString()}`;
@@ -136,15 +143,18 @@
       return weightKg / (heightM * heightM);
     }
 
-    function calculateRisk(age, bmi, isSmoker, isBadDiet) {
+    function calculateRisk(age, bmi, isSmoker, isBadDiet, isInactive, isHeavyDrinker, isNoHealthcare) {
       let baseRisk = 0.12;
       let risk = baseRisk;
 
-      if (bmi >= 30 && bmi < 35) risk *= 1.10;
-      else if (bmi >= 35) risk *= 1.25;
+      if (bmi >= 35) risk *= 1.5;
+      else if (bmi >= 30) risk *= 1.3;
 
-      if (isSmoker) risk *= 1.5;
-      if (isBadDiet) risk *= 1.3;
+      if (isSmoker) risk *= 1.3;
+      if (isBadDiet) risk *= 1.2;
+      if (isInactive) risk *= 1.25;
+      if (isHeavyDrinker) risk *= 1.3;
+      if (isNoHealthcare) risk *= 1.4;
 
       const daily = risk / 365;
       return { annual: risk, daily };
@@ -156,10 +166,16 @@
       const heightM = getHeightInMeters(feetEl.value, inchEl.value);
       const weight = parseFloat(weightEl.value);
       const bmi = calculateBMI(weight, heightM);
-      const isSmoker = smokerEl.checked;
-      const isBadDiet = dietEl.checked;
 
-      const risks = calculateRisk(age, bmi, isSmoker, isBadDiet);
+      const risks = calculateRisk(
+        age,
+        bmi,
+        smokerEl.checked,
+        dietEl.checked,
+        inactiveEl.checked,
+        alcoholEl.checked,
+        healthcareEl.checked
+      );
 
       document.getElementById("age").textContent = `🎉 Age: ${age} years old`;
 
@@ -171,22 +187,23 @@
       }
 
       document.getElementById("annual-risk").textContent = `📈 Estimated Annual Mortality Risk: ${(risks.annual * 100).toFixed(2)}%`;
-      document.getElementById("daily-risk").textContent = `⚠️ Daily Chance of Dying Today: ${(risks.daily * 100).toFixed(4)}% (≈ 1 in ${Math.round(1/risks.daily).toLocaleString()})`;
+      document.getElementById("daily-risk").textContent = `⚠️ Daily Chance of Dying Today: ${(risks.daily * 100).toFixed(4)}% (≈ 1 in ${Math.round(1 / risks.daily).toLocaleString()})`;
     }
 
-    window.addEventListener('load', () => {
-      const storedDate = localStorage.getItem('birthdate');
+    window.addEventListener("load", () => {
+      const storedDate = localStorage.getItem("birthdate");
       if (storedDate) birthEl.value = storedDate;
       updateDisplay();
     });
 
-    [birthEl, feetEl, inchEl, weightEl, smokerEl, dietEl].forEach(el => {
-      el.addEventListener('change', () => {
-        localStorage.setItem('birthdate', birthEl.value);
+    [birthEl, feetEl, inchEl, weightEl, smokerEl, dietEl, inactiveEl, alcoholEl, healthcareEl].forEach(el => {
+      el.addEventListener("change", () => {
+        localStorage.setItem("birthdate", birthEl.value);
         updateDisplay();
       });
     });
   </script>
+
   <!-- Disclaimer -->
   <div style="font-size: 0.7em; color: #888; margin-top: 4em; max-width: 600px; margin-left: auto; margin-right: auto;">
     <hr style="border-color: #333;" />
